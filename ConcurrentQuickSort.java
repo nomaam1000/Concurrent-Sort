@@ -94,7 +94,7 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         //and will "fork"
         leftThread.fork();
         //the right thread is the main thread, meaning it will run and wait for
-        //the left to join
+        //the left to "join"
         rightThread.compute();
 
         leftThread.join();
@@ -108,10 +108,14 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         ForkJoinPool pool = new ForkJoinPool();
 
         pool.invoke(new ConcurrentQuickSort(0, arr.length-1, arr));
-
+        
+        pool.close();
+        
         for (int i : arr) {
             System.out.print(i + ", ");
             
         }
+
+
     }
 }
