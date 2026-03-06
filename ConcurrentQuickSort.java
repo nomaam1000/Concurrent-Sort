@@ -17,7 +17,7 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
 
     public int quickSortPartition(int start, int end, int[] arr){
         //generate a random pivot between the beginning and 
-        // end of our (sub)array
+        //end of our (sub)array
         int startCopy = start;
         int endCopy = end; 
         int pivotIndex = new Random().nextInt(endCopy - startCopy) + startCopy;
@@ -33,7 +33,6 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         endCopy--;
 
         while (startCopy <= endCopy){
-            System.err.println("startCopy: " + startCopy + ", endCopy: " + endCopy);
             //we increment our startCopy pointer until we find the first
             //element greater than our pivot
             //originally tried to use a for loop here but it was causing some issues with
@@ -96,14 +95,28 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         //the right thread is the main thread, meaning it will run and wait for
         //the left to "join"
         rightThread.compute();
-
         leftThread.join();
 
         return null;
     }
 
+    public static int[] createRandomArr(int size){
+        int[] randArr = new int[size];
+
+        for (int i = 0; i < size; i++){
+            randArr[i] = new Random().nextInt(1000);
+        }
+
+        return randArr;
+    }
+
     public static void main(String[] args) {
-        int[] arr = {37, 92, 14, 58, 6, 81, 23, 60, 3, 134, 6, 33};
+        int[] arr = createRandomArr(15);
+        
+        for (int i : arr) {
+            System.out.print(i + ", ");
+        }
+        System.out.println();
 
         ForkJoinPool pool = new ForkJoinPool();
 
@@ -113,9 +126,6 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         
         for (int i : arr) {
             System.out.print(i + ", ");
-            
         }
-
-
     }
 }

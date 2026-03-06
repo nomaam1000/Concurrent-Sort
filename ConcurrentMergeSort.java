@@ -11,8 +11,8 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
         this.arr = arr;
     }
     
-    public static int[] merge(int[] leftArr, int[] rightArr){
-        int[] mergedArr = new int[leftArr.length + rightArr.length];
+    public static int[] merge(int[] leftArr, int[] rightArr, int[] arr){
+        int[] mergedArr = new int[arr.length];
         int index = 0;
         int pointerLeft = 0;
         int pointerRight = 0;
@@ -29,7 +29,6 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
                 pointerRight++;
             }
             index++;
-
         }
 
         //we check if we have finished sorting the left subarray, if we have,
@@ -39,7 +38,7 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
         if(leftArrFinished){
             for(int i = pointerRight; i < rightArr.length; i++){
                 mergedArr[index] = rightArr[i];
-                 index++;
+                index++;
              }
           }
         else{
@@ -74,19 +73,37 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
         leftThread.fork();
         //the right thread is n the main thread meaning it will run and wait for
         //the left to "join"
-        int[] rightResult = rightThread.compute();
-        int[] leftResult = leftThread.join();
+        rightThread.compute();
+        leftThread.join();
 
-        return merge(leftResult, rightResult);
+        arr = merge(leftThread.arr, rightThread.arr, arr);
+
+        return arr;
+    }
+
+    public static int[] createRandomArr(int size){
+        int[] randArr = new int[size];
+
+        for (int i = 0; i < size; i++){
+            randArr[i] = new Random().nextInt(1000);
+        }
+
+        return randArr;
     }
 
 
     public static void main(String[] args){
-        int[] arr = {37, 92, 14, 58, 6, 81, 23, 60, 3, 134, 6, 33};
+        int[] arr = createRandomArr(15);
+
+       for (int i : arr) {
+            System.out.print(i + ", ");
+        }
+        System.out.println();
+
 
         ForkJoinPool pool = new ForkJoinPool();
 
-        pool.invoke(new ConcurrentMergeSort(arr));
+        arr = pool.invoke(new ConcurrentMergeSort(arr));
 
         pool.close();
 
@@ -94,5 +111,4 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
             System.out.print(i + ", ");
         }
     }
-
 }
