@@ -116,7 +116,7 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
         int arraySize = 1000;
         for (int i = 1; i < 15; i++) {
             int[] arr = createRandomArr(arraySize*(int)Math.pow(2, i));
-            int[] arr2 = arr;
+            int[] arr2 = createRandomArr(arraySize*(int)Math.pow(2, i));
             
             ForkJoinPool pool = new ForkJoinPool(10);
             long startTime = System.nanoTime();

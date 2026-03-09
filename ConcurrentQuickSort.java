@@ -128,10 +128,10 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
 
     public static void main(String[] args) {
         int arraySize = 10000;
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 12; i++) {
             
             int[] arr = createRandomArr(arraySize*(int)Math.pow(2, i));
-            int[] arr2 = arr;
+            int[] arr2 = createRandomArr(arraySize*(int)Math.pow(2, i));
             
             ForkJoinPool pool = new ForkJoinPool(3);
             long startTime = System.nanoTime();
