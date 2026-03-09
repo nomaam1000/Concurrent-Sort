@@ -74,6 +74,22 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         return endCopy + 1;
     }
 
+    public int[] serialQuickSort(int start, int end, int[] arr2){
+        //base case
+        if (start >= end){
+            return arr2;
+        }
+
+        //we calculate our pivot index using our partition function
+        int pivotIndex = quickSortPartition(start, end, arr2);
+
+        //we recursively call our serial quicksort on the left and right subarrays
+        serialQuickSort(start, pivotIndex - 1, arr2);
+        serialQuickSort(pivotIndex+1, end, arr2);
+
+        return arr2;
+    }
+
 
     //Classes extending RecursiveTask<Integer> must implement compute() method
     protected Integer compute(){
@@ -86,7 +102,7 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         int pivotIndex = quickSortPartition(start, end, arr);
 
         //we create 2 threads to concurrently sort the left and right subarrays
-        ConcurrentQuickSort leftThread = new ConcurrentQuickSort(start, pivotIndex - 1, arr);
+        ConcurrentQuickSort leftThread = new ConcurrentQuickSort(this.start, pivotIndex - 1, arr);
         ConcurrentQuickSort rightThread = new ConcurrentQuickSort(pivotIndex+1, end, arr);
 
         //the left thread is a forked thread, meaning it will run concurrently
@@ -104,28 +120,43 @@ public class ConcurrentQuickSort extends RecursiveTask<Integer> {
         int[] randArr = new int[size];
 
         for (int i = 0; i < size; i++){
-            randArr[i] = new Random().nextInt(1000);
+            randArr[i] = new Random().nextInt(10000);
         }
 
         return randArr;
     }
 
     public static void main(String[] args) {
-        int[] arr = createRandomArr(15);
-        
-        for (int i : arr) {
-            System.out.print(i + ", ");
-        }
-        System.out.println();
+        int arraySize = 10000;
+        for (int i = 0; i < 15; i++) {
+            
+            int[] arr = createRandomArr(arraySize*(int)Math.pow(2, i));
+            int[] arr2 = arr;
+            
+            ForkJoinPool pool = new ForkJoinPool(3);
+            long startTime = System.nanoTime();
+            pool.invoke(new ConcurrentQuickSort(0, arr.length-1, arr));
+            long endTime = System.nanoTime();
+            pool.close();
+            long durationConcurrent = endTime - startTime;
+            
 
-        ForkJoinPool pool = new ForkJoinPool();
+            startTime = System.nanoTime();
+            arr2 = new ConcurrentQuickSort(0, arr2.length-1, arr2).serialQuickSort(0, arr2.length-1, arr2);
+            endTime = System.nanoTime();
+            long durationSerial = endTime - startTime;
 
-        pool.invoke(new ConcurrentQuickSort(0, arr.length-1, arr));
-        
-        pool.close();
-        
-        for (int i : arr) {
-            System.out.print(i + ", ");
+            System.out.println("Array Size: " + arr.length);
+            System.out.println("Concurrent Quick Sort Time; " + durationConcurrent + " nanoseconds");
+            System.out.println("Serial Quick Sort Time: " + durationSerial + " nanoseconds");
+
+            if (durationConcurrent < durationSerial){
+                System.out.println("Concurrent Quick Sort was faster by " + (durationSerial - durationConcurrent) + " nanoseconds");
+            }
+            else{
+                System.out.println("Serial Quick Sort was faster by " + (durationConcurrent - durationSerial) + " nanoseconds");
+            }
+            System.out.println();
         }
     }
 }

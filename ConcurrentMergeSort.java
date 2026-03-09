@@ -50,6 +50,26 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
         return mergedArr;
     }
 
+    public int[] serialMergeSort(int[] arr2){
+        //base case
+        if (arr2.length <= 1){
+            return arr2;
+        }
+        
+        //we calculate the midpoint of our (sub)array and create 2 subarrays
+        int mid = arr2.length/2;
+        
+        //we create 2 subarrays using our midpoint
+        int[] leftArr = Arrays.copyOfRange(arr2, 0, mid);
+        int[] rightArr = Arrays.copyOfRange(arr2, mid, arr2.length);
+
+        //we recursively call merge sort on the left and right subarrays
+        leftArr = serialMergeSort(leftArr);
+        rightArr = serialMergeSort(rightArr);
+
+        return merge(leftArr, rightArr, arr2);
+    }
+
     @Override
     public int[] compute(){
         //base case
@@ -93,22 +113,36 @@ public class ConcurrentMergeSort extends RecursiveTask<int[]>{
 
 
     public static void main(String[] args){
-        int[] arr = createRandomArr(15);
+        int arraySize = 1000;
+        for (int i = 1; i < 15; i++) {
+            int[] arr = createRandomArr(arraySize*(int)Math.pow(2, i));
+            int[] arr2 = arr;
+            
+            ForkJoinPool pool = new ForkJoinPool(10);
+            long startTime = System.nanoTime();
+            arr = pool.invoke(new ConcurrentMergeSort(arr));
+            long endTime = System.nanoTime();
+            pool.close();
+            long durationConcurrent = endTime - startTime;
 
-       for (int i : arr) {
-            System.out.print(i + ", ");
+
+            startTime = System.nanoTime();
+            arr2 = new ConcurrentMergeSort(arr2).serialMergeSort(arr2);
+            endTime = System.nanoTime();
+            long durationSerial = endTime - startTime;
+
+            System.out.println("Array Size: " + arr.length);
+            System.out.println("Concurrent Merge Sort Time; " + durationConcurrent + " nanoseconds");
+            System.out.println("Serial Merge Sort Time: " + durationSerial + " nanoseconds");
+
+            if (durationConcurrent < durationSerial){
+                System.out.println("Concurrent Merge Sort was faster by " + (durationSerial - durationConcurrent) + " nanoseconds");
+             }
+            else{
+                System.out.println("Serial Merge Sort was faster by " + (durationConcurrent - durationSerial) + " nanoseconds");
+            }
+            System.out.println();
         }
-        System.out.println();
-
-
-        ForkJoinPool pool = new ForkJoinPool();
-
-        arr = pool.invoke(new ConcurrentMergeSort(arr));
-
-        pool.close();
-
-        for (int i : arr) {
-            System.out.print(i + ", ");
-        }
+        
     }
 }
